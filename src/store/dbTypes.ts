@@ -9,6 +9,7 @@ import type {
   Conversation,
   EvidenceValidation,
   IncidentReport,
+  LearnerVerification,
   Message,
   NotificationPreferences,
   OsasCase,
@@ -53,4 +54,5 @@ export interface DbState {
   settings: SystemSettings
   savedTutors: SavedTutor[]
   notificationPreferences: NotificationPreferences[]
+  learnerVerifications: LearnerVerification[]
 }

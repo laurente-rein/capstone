@@ -4,9 +4,10 @@ import { Drawer } from '../ui/Drawer'
 import { Avatar } from '../ui/Avatar'
 import { Button } from '../ui/Button'
 import { useDb } from '../../hooks/useDb'
-import { getRatingsForTutor, getServicesForTutor, getTutorProfile, getUser } from '../../lib/selectors'
+import { getRatingsForTutor, getServicesForTutor, getTutorProfile, getUser, isLearnerVerified } from '../../lib/selectors'
 import { formatCurrency, timeAgo } from '../../lib/utils'
 import { BookingFlowModal } from './BookingFlowModal'
+import { LearnerVerificationModal } from './LearnerVerificationModal'
 import { SaveTutorButton } from './SaveTutorButton'
 import type { Service } from '../../types'
 
@@ -23,7 +24,9 @@ export function TutorProfileDrawer({
   const profile = useDb(() => (tutorId ? getTutorProfile(tutorId) : undefined))
   const services = useDb(() => (tutorId ? getServicesForTutor(tutorId).filter((s) => s.status === 'ACTIVE') : []))
   const ratings = useDb(() => (tutorId ? getRatingsForTutor(tutorId) : []))
+  const verified = useDb(() => isLearnerVerified(learnerId))
   const [bookingService, setBookingService] = useState<Service | null>(null)
+  const [pendingService, setPendingService] = useState<Service | null>(null)
 
   return (
     <>
@@ -72,7 +75,7 @@ export function TutorProfileDrawer({
                         {s.sessionType === 'BOTH' && <Layers className="size-3" />}
                         {s.sessionType === 'BOTH' ? 'Online or In-Person' : s.sessionType === 'ONLINE' ? 'Online' : 'In-Person'}
                       </span>
-                      <Button size="sm" onClick={() => setBookingService(s)}>
+                      <Button size="sm" onClick={() => (verified ? setBookingService(s) : setPendingService(s))}>
                         Book
                       </Button>
                     </div>
@@ -114,6 +117,16 @@ export function TutorProfileDrawer({
       {tutor && bookingService && (
         <BookingFlowModal open tutor={tutor} service={bookingService} learnerId={learnerId} onClose={() => setBookingService(null)} />
       )}
+
+      <LearnerVerificationModal
+        open={!!pendingService}
+        onClose={() => setPendingService(null)}
+        learnerId={learnerId}
+        onVerified={() => {
+          setBookingService(pendingService)
+          setPendingService(null)
+        }}
+      />
     </>
   )
 }

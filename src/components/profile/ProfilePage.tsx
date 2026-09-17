@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ShieldCheck, Star } from 'lucide-react'
+import { ShieldAlert, ShieldCheck, Star } from 'lucide-react'
 import { Card, CardBody, CardHeader } from '../ui/Card'
 import { Avatar } from '../ui/Avatar'
 import { Button } from '../ui/Button'
@@ -7,14 +7,18 @@ import { TextInput } from '../ui/Field'
 import { StatusBadge } from '../ui/StatusBadge'
 import { useDb } from '../../hooks/useDb'
 import type { UserAccount } from '../../types'
-import { getClearance, getTutorProfile } from '../../lib/selectors'
+import { getClearance, getLearnerVerification, getTutorProfile } from '../../lib/selectors'
 import { toast } from '../../store/toast'
+import { formatDateTime } from '../../lib/utils'
+import { LearnerVerificationModal } from '../learner/LearnerVerificationModal'
 
 export function ProfilePage({ user }: { user: UserAccount }) {
   const tutorProfile = useDb(() => (user.roles.includes('tutor') ? getTutorProfile(user.id) : undefined))
   const clearance = useDb(() => getClearance(user.id))
+  const verification = useDb(() => getLearnerVerification(user.id))
   const [firstName, setFirstName] = useState(user.firstName)
   const [lastName, setLastName] = useState(user.lastName)
+  const [showVerify, setShowVerify] = useState(false)
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
@@ -75,6 +79,40 @@ export function ProfilePage({ user }: { user: UserAccount }) {
         </CardBody>
       </Card>
 
+      {user.roles.includes('learner') && (
+        <Card>
+          <CardHeader title="Account Verification" />
+          <CardBody>
+            {verification ? (
+              <div className="flex items-center gap-3 rounded-lg border border-neutral-100 px-3.5 py-3">
+                <span className="flex size-9 items-center justify-center rounded-full bg-success-50 text-success-600">
+                  <ShieldCheck className="size-4" />
+                </span>
+                <div>
+                  <p className="text-sm font-medium text-neutral-800">Verified — you can book sessions</p>
+                  <p className="text-xs text-neutral-500">
+                    {verification.documentType} on file · verified {formatDateTime(verification.verifiedAt)}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 rounded-lg border border-gold-200 bg-gold-50 px-3.5 py-3">
+                <span className="flex size-9 items-center justify-center rounded-full bg-gold-100 text-gold-700">
+                  <ShieldAlert className="size-4" />
+                </span>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gold-800">Not verified yet</p>
+                  <p className="text-xs text-gold-700">Upload a Class Schedule, COR, or Student ID before you can book a session.</p>
+                </div>
+                <Button size="sm" onClick={() => setShowVerify(true)}>
+                  Verify Now
+                </Button>
+              </div>
+            )}
+          </CardBody>
+        </Card>
+      )}
+
       <Card>
         <CardHeader title="Connected Account" />
         <CardBody>
@@ -89,6 +127,16 @@ export function ProfilePage({ user }: { user: UserAccount }) {
           </div>
         </CardBody>
       </Card>
+
+      <LearnerVerificationModal
+        open={showVerify}
+        onClose={() => setShowVerify(false)}
+        learnerId={user.id}
+        onVerified={() => {
+          setShowVerify(false)
+          toast.success('Account verified! You can now book tutoring sessions.')
+        }}
+      />
     </div>
   )
 }

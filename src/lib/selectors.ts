@@ -367,3 +367,13 @@ export function getNotificationPreferences(userId: string): NotificationPreferen
 export function isTutorAvailableToday(tutorId: string): boolean {
   return getBookableAvailability(tutorId).some((s) => s.date === todayStr())
 }
+
+export function getLearnerVerification(learnerId: string) {
+  return getDb().learnerVerifications.find((v) => v.learnerId === learnerId)
+}
+
+/** A learner must upload an identity document (Class Schedule, COR, or Student ID
+ * showing name + school ID) before they're allowed to book a paid session. */
+export function isLearnerVerified(learnerId: string): boolean {
+  return !!getLearnerVerification(learnerId)
+}

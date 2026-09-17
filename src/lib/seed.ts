@@ -3,7 +3,7 @@ import type { SystemSettings } from '../types'
 import { PAYMENT_ALLOCATION, PAYMENT_METHOD, PAYMENT_PROVIDER } from './constants'
 import { addDaysToDateStr, makeId, todayStr } from './utils'
 
-export const SEED_VERSION = 9
+export const SEED_VERSION = 10
 
 function iso(dateStr: string, time = '09:00') {
   return new Date(`${dateStr}T${time}:00`).toISOString()
@@ -128,6 +128,36 @@ export function buildSeedData(): DbState {
       createdAt: iso(d(-90)),
     },
     {
+      id: 'u-nico',
+      firstName: 'Nico',
+      lastName: 'Ramirez',
+      studentId: '2024-00577',
+      email: 'nico.ramirez@csu.edu.ph',
+      college: 'College of Information and Computing',
+      program: 'BS Information Technology',
+      yearLevel: '1st Year',
+      authProvider: 'google',
+      emailVerified: true,
+      roles: ['learner'],
+      status: 'active',
+      createdAt: iso(d(-3)),
+    },
+    {
+      id: 'u-ella',
+      firstName: 'Ella',
+      lastName: 'Marquez',
+      studentId: '2021-00789',
+      email: 'ella.marquez@csu.edu.ph',
+      college: 'College of Science and Mathematics',
+      program: 'BS Mathematics',
+      yearLevel: '4th Year',
+      authProvider: 'google',
+      emailVerified: true,
+      roles: ['learner', 'tutor'],
+      status: 'active',
+      createdAt: iso(d(-30)),
+    },
+    {
       id: 'u-suspended',
       firstName: 'Miguel',
       lastName: 'Torres',
@@ -201,11 +231,39 @@ export function buildSeedData(): DbState {
       reviewedAt: iso(d(-250)),
       reviewedBy: 'u-admin',
     },
+    {
+      id: 'ta-ella',
+      userId: 'u-ella',
+      status: 'APPROVED',
+      subjects: ['Statistics', 'Calculus'],
+      motivation: 'I tutored classmates informally for years and want to make it official.',
+      documents: [
+        {
+          id: 'doc-ella-1',
+          applicationId: 'ta-ella',
+          fileName: 'ella_cor_2026.jpg',
+          fileUrl: '',
+          ocrConfidence: 85,
+          ocrFields: {
+            Name: 'Marquez, Ella',
+            'Student ID': '2021-00789',
+            Program: 'BS Mathematics',
+            'Year Level': '4th Year',
+          },
+          uploadedAt: iso(d(-31)),
+        },
+      ],
+      adminNotes: 'Approved after document match.',
+      submittedAt: iso(d(-32)),
+      reviewedAt: iso(d(-30)),
+      reviewedBy: 'u-admin',
+    },
   ]
 
   const tutorProfiles: DbState['tutorProfiles'] = [
     { userId: 'u-juan', bio: 'CS senior focused on programming & math fundamentals.', averageRating: 4.8, ratingCount: 24, totalEarnings: 0 },
     { userId: 'u-bea', bio: 'Chemistry major, patient and detail-oriented tutor.', averageRating: 4.6, ratingCount: 11, totalEarnings: 0 },
+    { userId: 'u-ella', bio: 'Math senior — Statistics and Calculus.', averageRating: 0, ratingCount: 0, totalEarnings: 0 },
   ]
 
   // ---- Class schedules ----
@@ -723,21 +781,36 @@ export function buildSeedData(): DbState {
       { id: makeId('saved'), learnerId: 'u-maria', tutorId: 'u-bea', createdAt: iso(d(-5)) },
     ],
     notificationPreferences: [],
+    // Accounts with pre-existing booking history are grandfathered in as verified;
+    // Nico is the one seeded account left unverified to demo the upload-to-book gate.
+    learnerVerifications: [
+      { id: makeId('lv'), learnerId: 'u-juan', documentType: 'Class Schedule', fileName: 'juan_class_schedule_1st_sem_2026.jpg', ocrExtractedName: 'Dela Cruz, Juan R.', ocrExtractedStudentId: '2022-00145', ocrConfidence: 91, verifiedAt: iso(d(-200)) },
+      { id: makeId('lv'), learnerId: 'u-maria', documentType: 'COR', fileName: 'maria_cor_2026.jpg', ocrExtractedName: 'Angela R., Maria', ocrExtractedStudentId: '2023-00892', ocrConfidence: 89, verifiedAt: iso(d(-150)) },
+      { id: makeId('lv'), learnerId: 'u-allen', documentType: 'Student ID', fileName: 'allen_id.jpg', ocrExtractedName: 'Ezra M., Allen', ocrExtractedStudentId: '2023-01120', ocrConfidence: 84, verifiedAt: iso(d(-120)) },
+      { id: makeId('lv'), learnerId: 'u-lyla', documentType: 'COR', fileName: 'lyla_cor_2026.jpg', ocrExtractedName: 'Shane B., Lyla', ocrExtractedStudentId: '2022-00456', ocrConfidence: 90, verifiedAt: iso(d(-110)) },
+      { id: makeId('lv'), learnerId: 'u-bea', documentType: 'Class Schedule', fileName: 'bea_class_schedule_1st_sem_2026.jpg', ocrExtractedName: 'Santos, Bea', ocrExtractedStudentId: '2021-00231', ocrConfidence: 87, verifiedAt: iso(d(-200)) },
+      { id: makeId('lv'), learnerId: 'u-carlo', documentType: 'Student ID', fileName: 'carlo_id.jpg', ocrExtractedName: 'Reyes, Carlo', ocrExtractedStudentId: '2022-00998', ocrConfidence: 86, verifiedAt: iso(d(-90)) },
+      { id: makeId('lv'), learnerId: 'u-ella', documentType: 'COR', fileName: 'ella_cor_2026.jpg', ocrExtractedName: 'Marquez, Ella', ocrExtractedStudentId: '2021-00789', ocrConfidence: 85, verifiedAt: iso(d(-30)) },
+    ],
   }
 }
 
 // Every account below is a single, unified identity — there is no separate "tutor account".
-// Juan and Bea already have an approved Tutor capability on their same Learner account so
-// there's a working marketplace (services, bookings, ratings) to browse from day one. Any
-// other Learner account — or a brand new Google sign-in — can go through the real pipeline
-// end to end: Apply as Tutor -> Admin approves -> upload & confirm class schedule -> create
-// services, all on that one account.
+// A student is a Learner by default; once Admin approves their tutor application, that same
+// account gains Tutor capability (the Learner | Tutor switcher in the sidebar). These four
+// Learner/Tutor demo accounts are staged to showcase each step of that pipeline:
+//   1. Nico   — plain Learner, not yet verified, hasn't applied as Tutor (role switcher visible)
+//   2. Maria  — verified Learner, can book a session and pay immediately
+//   3. Ella   — approved Tutor, must still upload & confirm a Class Schedule
+//   4. Juan   — approved Tutor with a confirmed schedule, can create services already
 //
 // These populate the simulated Google account picker on the login page — standing in for
 // the real Google OAuth consent screen, which this demo environment has no client ID for.
 export const DEMO_ACCOUNTS = [
-  { name: 'Juan Dela Cruz', role: 'Learner / Tutor — established marketplace', email: 'juan@csu.edu.ph' },
-  { name: 'Maria Angela R.', role: 'Learner — try Apply as Tutor from scratch', email: 'maria.angela@csu.edu.ph' },
+  { name: 'Nico Ramirez', role: "Learner — not verified yet, hasn't applied as Tutor", email: 'nico.ramirez@csu.edu.ph' },
+  { name: 'Maria Angela R.', role: 'Learner — verified, can book & pay immediately', email: 'maria.angela@csu.edu.ph' },
+  { name: 'Ella Marquez', role: 'Tutor — approved, needs to upload Class Schedule', email: 'ella.marquez@csu.edu.ph' },
+  { name: 'Juan Dela Cruz', role: 'Tutor — schedule confirmed, can create services', email: 'juan@csu.edu.ph' },
   { name: 'Grace Mendoza', role: 'Admin', email: 'admin@csu.edu.ph' },
   { name: 'Ramon Villareal', role: 'OSAS', email: 'osas@csu.edu.ph' },
 ]

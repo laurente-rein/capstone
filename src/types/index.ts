@@ -363,3 +363,16 @@ export interface NotificationPreferences {
   emailMessages: boolean
   emailPayments: boolean
 }
+
+export type LearnerDocumentType = 'Class Schedule' | 'COR' | 'Student ID'
+
+export interface LearnerVerification {
+  id: string
+  learnerId: string
+  documentType: LearnerDocumentType
+  fileName: string
+  ocrExtractedName?: string
+  ocrExtractedStudentId?: string
+  ocrConfidence?: number
+  verifiedAt: string
+}

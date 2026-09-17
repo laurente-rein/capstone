@@ -24,27 +24,33 @@ CampusTutor is Google-sign-in-only, restricted to `@csu.edu.ph` institutional ac
 
 Every account is a single, unified identity — there is no separate "tutor account". A student is a Learner by default; once Admin approves their tutor application, that *same* account gains Tutor capability (shown as a Learner | Tutor switcher in the sidebar).
 
+Booking also has one prerequisite: a Learner must upload an identity document (Class Schedule, COR, or Student ID showing their name and school ID) before they can book a paid session. This is self-serve — OCR runs client-side as decision support, but the upload itself is what verifies the account, with no separate approval queue. Unverified learners are prompted for this the moment they try to book, and can also verify proactively from **Profile → Account Verification**.
+
 ### Demo accounts
 
-These are the accounts listed in the account chooser:
+These are the accounts listed in the account chooser, staged to show each step of both pipelines — becoming a verified Learner and becoming an approved Tutor:
 
-| Role | Email |
-|---|---|
-| Learner / Tutor — already has an established marketplace (services, bookings, ratings) to browse | `juan@csu.edu.ph` |
-| Learner — use this one to try the tutor pipeline from scratch | `maria.angela@csu.edu.ph` |
-| Admin | `admin@csu.edu.ph` |
-| OSAS | `osas@csu.edu.ph` |
+| Role | Email | What it demonstrates |
+|---|---|---|
+| Learner | `nico.ramirez@csu.edu.ph` | Not verified yet, hasn't applied as Tutor — clicking **Book** or the **Tutor** switcher shows the respective gate/application form |
+| Learner | `maria.angela@csu.edu.ph` | Already verified — can book a session and pay, confirmed immediately |
+| Tutor | `ella.marquez@csu.edu.ph` | Approved as a Tutor, but **My Services → Create Service** is locked until she uploads & confirms a Class Schedule |
+| Tutor | `juan@csu.edu.ph` | Approved Tutor with a confirmed schedule and an established marketplace (services, bookings, ratings) — **Create Service** works immediately |
+| Admin | `admin@csu.edu.ph` | User mgmt, tutor verification, incidents, reports |
+| OSAS | `osas@csu.edu.ph` | Case review, evidence validation, clearance |
 
-You can also just type a brand-new `@csu.edu.ph` email under "Use another account" to try the first-time-signup + profile-completion path.
+You can also just type a brand-new `@csu.edu.ph` email under "Use another account" to try the first-time-signup + profile-completion path (lands as an unverified Learner, same as Nico).
 
-To see the full apply-as-tutor journey end to end on one account, either register a brand new account or log in as a plain Learner (e.g. `maria.angela@csu.edu.ph`) and:
+To see the full apply-as-tutor journey end to end on one account, either register a brand new account or log in as an unverified Learner (e.g. `nico.ramirez@csu.edu.ph`) and:
 
 1. Click the **Tutor** toggle in the sidebar (or **Apply as Tutor**) — since you haven't applied yet, it opens the application form.
 2. Submit it. It now shows an "Under Review" status screen if you click **Tutor** again.
 3. Log in as `admin@csu.edu.ph` → **Tutor Verification** → approve the application.
-4. Log back in as your account — the **Tutor** toggle now opens the Tutor dashboard directly. **My Services → Create Service** is locked with a "Class Schedule Required" prompt.
+4. Log back in as your account — the **Tutor** toggle now opens the Tutor dashboard directly. **My Services → Create Service** is locked with a "Class Schedule Required" prompt (this is exactly the state `ella.marquez@csu.edu.ph` starts in).
 5. Go to **Availability & Schedule → Class Schedule**, upload an image (any image works — OCR runs for real, but you can also just add rows manually in the review step), then confirm it.
 6. **Create Service** is now unlocked.
+
+To see the Learner verification gate, log in as `nico.ramirez@csu.edu.ph` and try to **Book** any tutor's service — you'll be prompted to upload a document first (any image works) before the booking flow opens.
 
 ### Connecting a real Supabase project
 
