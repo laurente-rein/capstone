@@ -6,10 +6,8 @@ import { homePathForUser } from './routes/ProtectedRoute'
 import { reconcileSessionStatuses } from './lib/actions'
 
 import { LoginPage } from './pages/auth/LoginPage'
-import { RegisterPage } from './pages/auth/RegisterPage'
 import { OtpPage } from './pages/auth/OtpPage'
-import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage'
-import { ResetPasswordPage } from './pages/auth/ResetPasswordPage'
+import { CompleteProfilePage } from './pages/auth/CompleteProfilePage'
 import { UnauthorizedPage } from './pages/misc/UnauthorizedPage'
 import { NotFoundPage } from './pages/misc/NotFoundPage'
 
@@ -72,10 +70,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<RootRedirect />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
         <Route path="/verify-otp" element={<OtpPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/complete-profile" element={<CompleteProfilePage />} />
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
         <Route element={<LearnerLayout />}>

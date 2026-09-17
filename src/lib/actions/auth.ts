@@ -3,18 +3,9 @@ import { useSessionStore, type OtpChallenge } from '../../store/session'
 import type { UserAccount } from '../../types'
 import { OTP_EXPIRY_SECONDS, OTP_LENGTH, OTP_RESEND_COOLDOWN_SECONDS } from '../constants'
 import { findUserByEmail } from '../selectors'
-import { isCsuEmail, makeId, simpleHash } from '../utils'
+import { isCsuEmail, makeId } from '../utils'
 
-export interface RegisterInput {
-  firstName: string
-  lastName: string
-  studentId: string
-  email: string
-  college: string
-  program: string
-  yearLevel: string
-  password: string
-}
+export class AuthError extends Error {}
 
 function generateOtp(): string {
   let code = ''
@@ -22,51 +13,30 @@ function generateOtp(): string {
   return code
 }
 
-export class AuthError extends Error {}
-
-export function validateRegistration(input: RegisterInput) {
-  if (!input.firstName.trim() || !input.lastName.trim()) throw new AuthError('First and last name are required.')
-  if (!input.studentId.trim()) throw new AuthError('Student ID is required.')
-  if (!isCsuEmail(input.email)) throw new AuthError('Only @csu.edu.ph institutional emails can register.')
-  if (findUserByEmail(input.email)) throw new AuthError('An account with this email already exists.')
-  if (!input.college || !input.program || !input.yearLevel) throw new AuthError('College, program, and year level are required.')
-  if (input.password.length < 8) throw new AuthError('Password must be at least 8 characters.')
-}
-
-/** Step 1 of registration — does NOT create the account yet. The account is only created
- * once the OTP is verified (see verifyOtp). */
-export function startRegistration(input: RegisterInput): OtpChallenge {
-  validateRegistration(input)
-  const challenge: OtpChallenge = {
-    email: input.email,
-    code: generateOtp(),
-    expiresAt: Date.now() + OTP_EXPIRY_SECONDS * 1000,
-    purpose: 'REGISTER',
-    attempts: 0,
-    lastSentAt: Date.now(),
+/** Step 1 of the sign-in flow: the user has just picked a Google account from the
+ * simulated account chooser. We only accept CSU institutional emails, then send an
+ * OTP to that address before trusting the identity — Google alone does not
+ * establish CSU affiliation for a personal Gmail-style account. */
+export function startGoogleSignIn(email: string, displayName: string): OtpChallenge {
+  if (!isCsuEmail(email)) {
+    throw new AuthError('Only @csu.edu.ph CSU institutional Google accounts can access CampusTutor.')
   }
-  ;(challenge as any).payload = input
-  useSessionStore.getState().setOtpChallenge(challenge)
-  // eslint-disable-next-line no-console
-  console.info(`[CampusTutor DEV] OTP for ${input.email}: ${challenge.code}`)
-  return challenge
-}
-
-export function startPasswordReset(email: string): OtpChallenge {
   const user = findUserByEmail(email)
-  if (!user) throw new AuthError('No account found with that email.')
+  if (user?.status === 'suspended') {
+    throw new AuthError(`Your account has been suspended. Reason: ${user.suspensionReason ?? 'Contact OSAS/Admin.'}`)
+  }
   const challenge: OtpChallenge = {
     email,
+    displayName,
     code: generateOtp(),
     expiresAt: Date.now() + OTP_EXPIRY_SECONDS * 1000,
-    purpose: 'RESET',
-    pendingUserId: user.id,
+    purpose: 'GOOGLE_SIGNIN',
     attempts: 0,
     lastSentAt: Date.now(),
   }
   useSessionStore.getState().setOtpChallenge(challenge)
   // eslint-disable-next-line no-console
-  console.info(`[CampusTutor DEV] Password reset OTP for ${email}: ${challenge.code}`)
+  console.info(`[CampusTutor DEV] OTP for ${email}: ${challenge.code}`)
   return challenge
 }
 
@@ -89,9 +59,14 @@ export function resendOtp(): OtpChallenge {
   return refreshed
 }
 
-/** Verifies the OTP. For REGISTER purpose this also creates the user account.
- * For RESET purpose it just unlocks the reset-password step. */
-export function verifyOtp(code: string): { purpose: OtpChallenge['purpose']; user?: UserAccount } {
+export type VerifyOtpResult =
+  | { status: 'LOGGED_IN'; user: UserAccount }
+  | { status: 'NEEDS_PROFILE'; email: string; displayName: string }
+
+/** Verifies the OTP. An existing account is logged straight in; a brand-new CSU
+ * email needs a short profile-completion step next (see completeGoogleProfile) —
+ * Google only gives us a name and a verified email, not a Student ID/college/etc. */
+export function verifyOtp(code: string): VerifyOtpResult {
   const challenge = useSessionStore.getState().otpChallenge
   if (!challenge) throw new AuthError('No verification in progress.')
   if (Date.now() > challenge.expiresAt) throw new AuthError('This code has expired. Please request a new one.')
@@ -101,58 +76,61 @@ export function verifyOtp(code: string): { purpose: OtpChallenge['purpose']; use
     throw new AuthError('Invalid code. Please try again.')
   }
 
-  if (challenge.purpose === 'REGISTER') {
-    const payload = (challenge as any).payload as RegisterInput
-    const newUser: UserAccount = {
-      id: makeId('u'),
-      firstName: payload.firstName,
-      lastName: payload.lastName,
-      studentId: payload.studentId,
-      email: payload.email,
-      college: payload.college,
-      program: payload.program,
-      yearLevel: payload.yearLevel,
-      passwordHash: simpleHash(payload.password),
-      emailVerified: true,
-      roles: ['learner'],
-      status: 'active',
-      createdAt: new Date().toISOString(),
-    }
-    updateDb((db) => {
-      db.users = [...db.users, newUser]
-    })
+  const existing = findUserByEmail(challenge.email)
+  if (existing) {
     useSessionStore.getState().setOtpChallenge(null)
-    return { purpose: 'REGISTER', user: newUser }
+    const activeRole = existing.roles.includes('learner') ? 'learner' : existing.roles.includes('tutor') ? 'tutor' : null
+    useSessionStore.getState().login(existing.id, activeRole as any)
+    return { status: 'LOGGED_IN', user: existing }
   }
 
+  // Keep the challenge around (cleared once completeGoogleProfile runs) so a page
+  // refresh mid-onboarding doesn't silently drop the verified-email guarantee.
   useSessionStore.getState().setOtpChallenge({ ...challenge, attempts: 0 })
-  return { purpose: challenge.purpose }
+  return { status: 'NEEDS_PROFILE', email: challenge.email, displayName: challenge.displayName }
 }
 
-export function completePasswordReset(newPassword: string) {
+export interface CompleteProfileInput {
+  firstName: string
+  lastName: string
+  studentId: string
+  college: string
+  program: string
+  yearLevel: string
+}
+
+/** Creates the account for a first-time CSU Google sign-in. Only reachable after
+ * verifyOtp has already confirmed the email, so no further verification is needed. */
+export function completeGoogleProfile(input: CompleteProfileInput): UserAccount {
   const challenge = useSessionStore.getState().otpChallenge
-  if (!challenge || challenge.purpose !== 'RESET' || !challenge.pendingUserId) {
-    throw new AuthError('Password reset session expired. Please start again.')
+  if (!challenge || challenge.purpose !== 'GOOGLE_SIGNIN') {
+    throw new AuthError('Your sign-in session expired. Please continue with Google again.')
   }
-  if (newPassword.length < 8) throw new AuthError('Password must be at least 8 characters.')
+  if (!input.firstName.trim() || !input.lastName.trim()) throw new AuthError('First and last name are required.')
+  if (!input.studentId.trim()) throw new AuthError('Student ID is required.')
+  if (!input.college || !input.program || !input.yearLevel) throw new AuthError('College, program, and year level are required.')
+
+  const newUser: UserAccount = {
+    id: makeId('u'),
+    firstName: input.firstName.trim(),
+    lastName: input.lastName.trim(),
+    studentId: input.studentId.trim(),
+    email: challenge.email,
+    college: input.college,
+    program: input.program,
+    yearLevel: input.yearLevel,
+    authProvider: 'google',
+    emailVerified: true,
+    roles: ['learner'],
+    status: 'active',
+    createdAt: new Date().toISOString(),
+  }
   updateDb((db) => {
-    db.users = db.users.map((u) =>
-      u.id === challenge.pendingUserId ? { ...u, passwordHash: simpleHash(newPassword) } : u,
-    )
+    db.users = [...db.users, newUser]
   })
   useSessionStore.getState().setOtpChallenge(null)
-}
-
-export function loginWithPassword(email: string, password: string): UserAccount {
-  const user = findUserByEmail(email)
-  if (!user) throw new AuthError('No account found with that email.')
-  if (user.passwordHash !== simpleHash(password)) throw new AuthError('Incorrect password.')
-  if (user.status === 'suspended') {
-    throw new AuthError(`Your account has been suspended. Reason: ${user.suspensionReason ?? 'Contact OSAS/Admin.'}`)
-  }
-  const activeRole = user.roles.includes('learner') ? 'learner' : user.roles.includes('tutor') ? 'tutor' : null
-  useSessionStore.getState().login(user.id, activeRole as any)
-  return user
+  useSessionStore.getState().login(newUser.id, 'learner')
+  return newUser
 }
 
 export function logout() {

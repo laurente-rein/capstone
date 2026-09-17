@@ -68,16 +68,6 @@ export function isCsuEmail(email: string): boolean {
   return /^[a-zA-Z0-9._%+-]+@csu\.edu\.ph$/.test(email.trim())
 }
 
-export function simpleHash(input: string): string {
-  // NOT for production use — production uses Supabase Auth (bcrypt/argon2 server-side).
-  let hash = 0
-  for (let i = 0; i < input.length; i++) {
-    hash = (hash << 5) - hash + input.charCodeAt(i)
-    hash |= 0
-  }
-  return `h${hash}`
-}
-
 export function dayOfWeekCode(dateStr: string): 'MON' | 'TUE' | 'WED' | 'THU' | 'FRI' | 'SAT' | 'SUN' {
   const codes: Array<'SUN' | 'MON' | 'TUE' | 'WED' | 'THU' | 'FRI' | 'SAT'> = [
     'SUN',

@@ -1,27 +1,39 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { UserCircle2 } from 'lucide-react'
 import { AuthLayout } from './AuthLayout'
-import { AuthTabs } from './AuthTabs'
 import { Button } from '../../components/ui/Button'
 import { TextInput, SelectInput } from '../../components/ui/Field'
 import { COLLEGES, PROGRAMS, YEAR_LEVELS } from '../../lib/constants'
-import { AuthError, startRegistration } from '../../lib/actions'
+import { AuthError, completeGoogleProfile } from '../../lib/actions'
+import { useSessionStore } from '../../store/session'
+import { homePathForUser } from '../../routes/ProtectedRoute'
 
-export function RegisterPage() {
+export function CompleteProfilePage() {
   const navigate = useNavigate()
+  const challenge = useSessionStore((s) => s.otpChallenge)
+
+  const [firstName, lastName] = challenge ? splitName(challenge.displayName) : ['', '']
   const [form, setForm] = useState({
-    firstName: '',
-    lastName: '',
+    firstName,
+    lastName,
     studentId: '',
-    email: '',
     college: '',
     program: '',
     yearLevel: '',
-    password: '',
-    confirmPassword: '',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    // Mount-only guard — see OtpPage for why this must not react to `challenge`
+    // going null later, which happens on a *successful* submit right below.
+    const c = useSessionStore.getState().otpChallenge
+    if (!c || c.purpose !== 'GOOGLE_SIGNIN') navigate('/login', { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  if (!challenge) return null
 
   function set<K extends keyof typeof form>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value, ...(key === 'college' ? { program: '' } : {}) }))
@@ -30,15 +42,11 @@ export function RegisterPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
-    if (form.password !== form.confirmPassword) {
-      setError('Passwords do not match.')
-      return
-    }
     setLoading(true)
     try {
       await new Promise((r) => setTimeout(r, 400))
-      startRegistration(form)
-      navigate('/verify-otp', { state: { purpose: 'REGISTER' } })
+      const user = completeGoogleProfile(form)
+      navigate(homePathForUser(user))
     } catch (err) {
       setError(err instanceof AuthError ? err.message : 'Something went wrong. Please try again.')
     } finally {
@@ -50,22 +58,14 @@ export function RegisterPage() {
 
   return (
     <AuthLayout>
-      <div className="mb-4 flex items-center justify-end gap-3 text-sm">
-        <span className="text-neutral-500">Already have an account?</span>
-        <Link to="/login">
-          <Button variant="secondary" size="sm">
-            Login
-          </Button>
-        </Link>
-      </div>
-
       <div className="rounded-2xl border border-neutral-100 bg-white p-7 shadow-xl shadow-neutral-200/50">
-        <h1 className="text-2xl font-bold text-neutral-900">Create your account</h1>
-        <p className="mt-1 text-sm text-neutral-500">Register with your official CSU student email.</p>
-
-        <div className="mt-5">
-          <AuthTabs active="register" />
+        <div className="mb-3 flex size-12 items-center justify-center rounded-full bg-brand-50">
+          <UserCircle2 className="size-6 text-brand-700" />
         </div>
+        <h1 className="text-2xl font-bold text-neutral-900">Complete your profile</h1>
+        <p className="mt-1 text-sm text-neutral-500">
+          Your CSU Google account (<span className="font-medium text-neutral-700">{challenge.email}</span>) is verified. Just a few more details to set up CampusTutor.
+        </p>
 
         <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
           <div className="grid grid-cols-2 gap-3">
@@ -73,15 +73,6 @@ export function RegisterPage() {
             <TextInput label="Last Name" required value={form.lastName} onChange={(e) => set('lastName', e.target.value)} />
           </div>
           <TextInput label="Student ID" required placeholder="2022-00145" value={form.studentId} onChange={(e) => set('studentId', e.target.value)} />
-          <TextInput
-            label="CSU Email"
-            type="email"
-            required
-            placeholder="name@csu.edu.ph"
-            hint="Only @csu.edu.ph institutional emails can register."
-            value={form.email}
-            onChange={(e) => set('email', e.target.value)}
-          />
           <SelectInput label="College" required placeholder="Select college" value={form.college} onChange={(e) => set('college', e.target.value)}>
             {COLLEGES.map((c) => (
               <option key={c} value={c}>
@@ -112,10 +103,6 @@ export function RegisterPage() {
               ))}
             </SelectInput>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <TextInput label="Password" type="password" required hint="At least 8 characters" value={form.password} onChange={(e) => set('password', e.target.value)} />
-            <TextInput label="Confirm Password" type="password" required value={form.confirmPassword} onChange={(e) => set('confirmPassword', e.target.value)} />
-          </div>
 
           {error && <p className="rounded-lg bg-danger-50 px-3 py-2 text-sm text-danger-700">{error}</p>}
 
@@ -129,4 +116,10 @@ export function RegisterPage() {
       </div>
     </AuthLayout>
   )
+}
+
+function splitName(displayName: string): [string, string] {
+  const parts = displayName.trim().split(/\s+/)
+  if (parts.length === 1) return [parts[0], '']
+  return [parts[0], parts.slice(1).join(' ')]
 }

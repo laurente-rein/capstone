@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { CheckCircle2, ShieldCheck } from 'lucide-react'
 import { AuthLayout } from './AuthLayout'
 import { Button } from '../../components/ui/Button'
@@ -10,7 +10,6 @@ import { OTP_LENGTH } from '../../lib/constants'
 
 export function OtpPage() {
   const navigate = useNavigate()
-  const location = useLocation()
   const challenge = useSessionStore((s) => s.otpChallenge)
   const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(''))
   const [error, setError] = useState('')
@@ -25,8 +24,12 @@ export function OtpPage() {
   }, [])
 
   useEffect(() => {
-    if (!challenge) navigate(location.state?.purpose === 'RESET' ? '/forgot-password' : '/register', { replace: true })
-  }, [challenge]) // eslint-disable-line react-hooks/exhaustive-deps
+    // Only guard on mount — a challenge that later goes null is the *expected*
+    // result of a successful verification (see handleVerify), not a reason to
+    // bounce back to login and stomp on the navigation that just happened.
+    if (!useSessionStore.getState().otpChallenge) navigate('/login', { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   if (!challenge) return null
 
@@ -75,11 +78,10 @@ export function OtpPage() {
     try {
       await new Promise((r) => setTimeout(r, 500))
       const result = verifyOtp(code)
-      if (result.purpose === 'REGISTER' && result.user) {
-        useSessionStore.getState().login(result.user.id, 'learner')
+      if (result.status === 'LOGGED_IN') {
         navigate(homePathForUser(result.user))
       } else {
-        navigate('/reset-password')
+        navigate('/complete-profile')
       }
     } catch (err) {
       setError(err instanceof AuthError ? err.message : 'Verification failed.')
@@ -156,9 +158,12 @@ export function OtpPage() {
           <Button
             variant="outline"
             fullWidth
-            onClick={() => navigate(location.state?.purpose === 'RESET' ? '/forgot-password' : '/register')}
+            onClick={() => {
+              useSessionStore.getState().setOtpChallenge(null)
+              navigate('/login')
+            }}
           >
-            ← Change Email
+            ← Use a Different Account
           </Button>
         </div>
 

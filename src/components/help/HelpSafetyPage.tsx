@@ -24,7 +24,7 @@ export function HelpSafetyPage() {
         <CardBody>
           <ul className="list-disc space-y-1.5 pl-4 text-sm text-neutral-600">
             <li>Only communicate through CampusTutor Messages and use the official Google Meet/Zoom link for sessions.</li>
-            <li>Never share your password or OTP code with anyone.</li>
+            <li>Never share your OTP code with anyone, including someone claiming to be CampusTutor support.</li>
             <li>Report no-shows, harassment, or payment issues immediately using Report an Issue.</li>
             <li>Payments are processed exclusively through PayMongo (GCash) — never send money directly.</li>
           </ul>

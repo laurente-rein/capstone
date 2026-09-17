@@ -1,12 +1,9 @@
 import type { DbState } from '../store/dbTypes'
 import type { SystemSettings } from '../types'
 import { PAYMENT_ALLOCATION, PAYMENT_METHOD, PAYMENT_PROVIDER } from './constants'
-import { addDaysToDateStr, makeId, simpleHash, todayStr } from './utils'
+import { addDaysToDateStr, makeId, todayStr } from './utils'
 
-export const SEED_VERSION = 8
-
-const DEMO_PASSWORD = 'Passw0rd!'
-const hash = () => simpleHash(DEMO_PASSWORD)
+export const SEED_VERSION = 9
 
 function iso(dateStr: string, time = '09:00') {
   return new Date(`${dateStr}T${time}:00`).toISOString()
@@ -23,7 +20,7 @@ export function buildSeedData(): DbState {
       firstName: 'Grace',
       lastName: 'Mendoza',
       email: 'admin@csu.edu.ph',
-      passwordHash: hash(),
+      authProvider: 'google',
       emailVerified: true,
       roles: ['admin'],
       status: 'active',
@@ -34,7 +31,7 @@ export function buildSeedData(): DbState {
       firstName: 'Ramon',
       lastName: 'Villareal',
       email: 'osas@csu.edu.ph',
-      passwordHash: hash(),
+      authProvider: 'google',
       emailVerified: true,
       roles: ['osas'],
       status: 'active',
@@ -49,7 +46,7 @@ export function buildSeedData(): DbState {
       college: 'College of Information and Computing',
       program: 'BS Computer Science',
       yearLevel: '4th Year',
-      passwordHash: hash(),
+      authProvider: 'google',
       emailVerified: true,
       roles: ['learner', 'tutor'],
       status: 'active',
@@ -64,7 +61,7 @@ export function buildSeedData(): DbState {
       college: 'College of Engineering and Geosciences',
       program: 'BS Civil Engineering',
       yearLevel: '2nd Year',
-      passwordHash: hash(),
+      authProvider: 'google',
       emailVerified: true,
       roles: ['learner'],
       status: 'active',
@@ -79,7 +76,7 @@ export function buildSeedData(): DbState {
       college: 'College of Information and Computing',
       program: 'BS Information Technology',
       yearLevel: '1st Year',
-      passwordHash: hash(),
+      authProvider: 'google',
       emailVerified: true,
       roles: ['learner'],
       status: 'active',
@@ -94,7 +91,7 @@ export function buildSeedData(): DbState {
       college: 'College of Science and Mathematics',
       program: 'BS Mathematics',
       yearLevel: '3rd Year',
-      passwordHash: hash(),
+      authProvider: 'google',
       emailVerified: true,
       roles: ['learner'],
       status: 'active',
@@ -109,7 +106,7 @@ export function buildSeedData(): DbState {
       college: 'College of Science and Mathematics',
       program: 'BS Chemistry',
       yearLevel: '4th Year',
-      passwordHash: hash(),
+      authProvider: 'google',
       emailVerified: true,
       roles: ['learner', 'tutor'],
       status: 'active',
@@ -124,7 +121,7 @@ export function buildSeedData(): DbState {
       college: 'College of Information and Computing',
       program: 'BS Information Technology',
       yearLevel: '3rd Year',
-      passwordHash: hash(),
+      authProvider: 'google',
       emailVerified: true,
       roles: ['learner'],
       status: 'active',
@@ -139,7 +136,7 @@ export function buildSeedData(): DbState {
       college: 'College of Arts and Sciences',
       program: 'BA Communication',
       yearLevel: '4th Year',
-      passwordHash: hash(),
+      authProvider: 'google',
       emailVerified: true,
       roles: ['learner'],
       status: 'suspended',
@@ -732,12 +729,15 @@ export function buildSeedData(): DbState {
 // Every account below is a single, unified identity — there is no separate "tutor account".
 // Juan and Bea already have an approved Tutor capability on their same Learner account so
 // there's a working marketplace (services, bookings, ratings) to browse from day one. Any
-// other Learner account — or a brand new registration — can go through the real pipeline
+// other Learner account — or a brand new Google sign-in — can go through the real pipeline
 // end to end: Apply as Tutor -> Admin approves -> upload & confirm class schedule -> create
 // services, all on that one account.
+//
+// These populate the simulated Google account picker on the login page — standing in for
+// the real Google OAuth consent screen, which this demo environment has no client ID for.
 export const DEMO_ACCOUNTS = [
-  { role: 'Learner / Tutor (established marketplace)', email: 'juan@csu.edu.ph', password: DEMO_PASSWORD },
-  { role: 'Learner (try Apply as Tutor from scratch)', email: 'maria.angela@csu.edu.ph', password: DEMO_PASSWORD },
-  { role: 'Admin', email: 'admin@csu.edu.ph', password: DEMO_PASSWORD },
-  { role: 'OSAS', email: 'osas@csu.edu.ph', password: DEMO_PASSWORD },
+  { name: 'Juan Dela Cruz', role: 'Learner / Tutor — established marketplace', email: 'juan@csu.edu.ph' },
+  { name: 'Maria Angela R.', role: 'Learner — try Apply as Tutor from scratch', email: 'maria.angela@csu.edu.ph' },
+  { name: 'Grace Mendoza', role: 'Admin', email: 'admin@csu.edu.ph' },
+  { name: 'Ramon Villareal', role: 'OSAS', email: 'osas@csu.edu.ph' },
 ]

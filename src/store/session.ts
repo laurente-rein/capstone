@@ -4,10 +4,10 @@ import type { ActiveRole } from '../types'
 
 export interface OtpChallenge {
   email: string
+  displayName: string
   code: string
   expiresAt: number
-  purpose: 'REGISTER' | 'LOGIN' | 'RESET'
-  pendingUserId?: string
+  purpose: 'GOOGLE_SIGNIN'
   attempts: number
   lastSentAt: number
 }

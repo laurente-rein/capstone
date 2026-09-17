@@ -13,9 +13,20 @@ npm run dev
 
 The app runs entirely on a **built-in mock backend** by default — a Zustand store persisted to `localStorage`, seeded with realistic, cross-linked sample data (see `src/lib/seed.ts`). No Supabase project is required to try every workflow.
 
+### Signing in
+
+CampusTutor is Google-sign-in-only, restricted to `@csu.edu.ph` institutional accounts:
+
+1. **Continue with Google** opens a simulated Google account chooser (this demo environment has no real OAuth client ID, so it lists mock CSU Google accounts instead of hitting Google's actual consent screen).
+2. Pick an account — or **Use another account** to type any name + `@csu.edu.ph` email. A non-CSU email (e.g. `@gmail.com`) is rejected right there, matching the real "only institutional accounts" restriction.
+3. An OTP is sent to that email (shown in the dev console) and must be verified.
+4. **Existing account** → straight to the dashboard. **Brand-new email** → a short "Complete your profile" step (Student ID, college, program, year level — the things Google itself doesn't know) before landing on the Learner Dashboard.
+
+Every account is a single, unified identity — there is no separate "tutor account". A student is a Learner by default; once Admin approves their tutor application, that *same* account gains Tutor capability (shown as a Learner | Tutor switcher in the sidebar).
+
 ### Demo accounts
 
-Every account is a single, unified identity — there is no separate "tutor account". A student is a Learner by default; once Admin approves their tutor application, that *same* account gains Tutor capability (shown as a Learner | Tutor switcher in the sidebar). All seeded accounts use the password `Passw0rd!` (also shown on the login page under "Need Help?"):
+These are the accounts listed in the account chooser:
 
 | Role | Email |
 |---|---|
@@ -23,6 +34,8 @@ Every account is a single, unified identity — there is no separate "tutor acco
 | Learner — use this one to try the tutor pipeline from scratch | `maria.angela@csu.edu.ph` |
 | Admin | `admin@csu.edu.ph` |
 | OSAS | `osas@csu.edu.ph` |
+
+You can also just type a brand-new `@csu.edu.ph` email under "Use another account" to try the first-time-signup + profile-completion path.
 
 To see the full apply-as-tutor journey end to end on one account, either register a brand new account or log in as a plain Learner (e.g. `maria.angela@csu.edu.ph`) and:
 

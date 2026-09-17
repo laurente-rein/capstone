@@ -13,7 +13,7 @@ export interface UserAccount {
   college?: string
   program?: string
   yearLevel?: string
-  passwordHash: string
+  authProvider: 'google'
   emailVerified: boolean
   roles: AppRole[] // e.g. ['learner'] or ['learner','tutor'] or ['admin'] or ['osas']
   status: 'active' | 'suspended'

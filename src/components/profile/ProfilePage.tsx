@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Star } from 'lucide-react'
+import { ShieldCheck, Star } from 'lucide-react'
 import { Card, CardBody, CardHeader } from '../ui/Card'
 import { Avatar } from '../ui/Avatar'
 import { Button } from '../ui/Button'
@@ -76,13 +76,17 @@ export function ProfilePage({ user }: { user: UserAccount }) {
       </Card>
 
       <Card>
-        <CardHeader title="Password" />
-        <CardBody className="space-y-3">
-          <TextInput label="New Password" type="password" placeholder="••••••••" />
-          <TextInput label="Confirm New Password" type="password" placeholder="••••••••" />
-          <Button variant="secondary" onClick={() => toast.success('Password updated.')}>
-            Update Password
-          </Button>
+        <CardHeader title="Connected Account" />
+        <CardBody>
+          <div className="flex items-center gap-3 rounded-lg border border-neutral-100 px-3.5 py-3">
+            <span className="flex size-9 items-center justify-center rounded-full bg-success-50 text-success-600">
+              <ShieldCheck className="size-4" />
+            </span>
+            <div>
+              <p className="text-sm font-medium text-neutral-800">Signed in with Google</p>
+              <p className="text-xs text-neutral-500">{user.email} · verified</p>
+            </div>
+          </div>
         </CardBody>
       </Card>
     </div>
