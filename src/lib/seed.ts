@@ -3,7 +3,7 @@ import type { SystemSettings } from '../types'
 import { PAYMENT_ALLOCATION, PAYMENT_METHOD, PAYMENT_PROVIDER } from './constants'
 import { addDaysToDateStr, makeId, simpleHash, todayStr } from './utils'
 
-export const SEED_VERSION = 7
+export const SEED_VERSION = 8
 
 const DEMO_PASSWORD = 'Passw0rd!'
 const hash = () => simpleHash(DEMO_PASSWORD)
@@ -722,6 +722,10 @@ export function buildSeedData(): DbState {
     policies,
     auditLogs,
     settings,
+    savedTutors: [
+      { id: makeId('saved'), learnerId: 'u-maria', tutorId: 'u-bea', createdAt: iso(d(-5)) },
+    ],
+    notificationPreferences: [],
   }
 }
 

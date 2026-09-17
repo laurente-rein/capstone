@@ -10,6 +10,7 @@ import type {
   EvidenceValidation,
   IncidentReport,
   Message,
+  NotificationPreferences,
   OsasCase,
   Payment,
   PaymentAllocation,
@@ -17,6 +18,7 @@ import type {
   Rating,
   Refund,
   RescheduleRequest,
+  SavedTutor,
   Service,
   SystemSettings,
   TutorApplication,
@@ -49,4 +51,6 @@ export interface DbState {
   policies: Policy[]
   auditLogs: AuditLogEntry[]
   settings: SystemSettings
+  savedTutors: SavedTutor[]
+  notificationPreferences: NotificationPreferences[]
 }

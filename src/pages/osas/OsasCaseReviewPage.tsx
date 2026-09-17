@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { FolderSearch } from 'lucide-react'
 import { Card } from '../../components/ui/Card'
 import { Tabs } from '../../components/ui/Tabs'
@@ -31,8 +32,21 @@ const DECISIONS: CaseDecisionType[] = [
 
 export function OsasCaseReviewPage() {
   const cases = useDb(getOsasCases).filter((c) => c.status !== 'ARCHIVED')
+  const [searchParams, setSearchParams] = useSearchParams()
   const [tab, setTab] = useState('ACTIVE')
   const [selected, setSelected] = useState<OsasCase | null>(null)
+
+  useEffect(() => {
+    const caseId = searchParams.get('case')
+    if (!caseId) return
+    const match = cases.find((c) => c.id === caseId)
+    if (match) {
+      setSelected(match)
+      setTab(match.status === 'DECIDED' ? 'DECIDED' : 'ACTIVE')
+    }
+    setSearchParams({}, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const shown = tab === 'ACTIVE' ? cases.filter((c) => c.status !== 'DECIDED') : cases.filter((c) => c.status === 'DECIDED')
 

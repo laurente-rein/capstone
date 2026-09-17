@@ -349,3 +349,17 @@ export interface SystemSettings {
   osasSharePct: number
   platformSharePct: number
 }
+
+export interface SavedTutor {
+  id: string
+  learnerId: string
+  tutorId: string
+  createdAt: string
+}
+
+export interface NotificationPreferences {
+  userId: string
+  emailBookingUpdates: boolean
+  emailMessages: boolean
+  emailPayments: boolean
+}

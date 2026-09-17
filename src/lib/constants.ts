@@ -62,3 +62,13 @@ export const SUBJECT_CATEGORIES = [
   'Statistics',
   'General Education',
 ]
+
+export const POPULAR_SUBJECTS = ['Programming', 'Calculus', 'Physics', 'Chemistry', 'Statistics', 'Accounting', 'English', 'Filipino']
+
+export const TUTOR_CATEGORY_GROUPS: { label: string; categories: string[] }[] = [
+  { label: 'STEM', categories: ['Sciences', 'Mathematics', 'Statistics', 'Engineering'] },
+  { label: 'IT & Computer Science', categories: ['Programming'] },
+  { label: 'Business', categories: ['Business'] },
+  { label: 'Languages', categories: ['Languages'] },
+  { label: 'Education', categories: ['General Education'] },
+]

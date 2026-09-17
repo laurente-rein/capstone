@@ -22,6 +22,9 @@ import { LearnerNotificationsPage } from './pages/learner/LearnerNotificationsPa
 import { ApplyAsTutorPage } from './pages/learner/ApplyAsTutorPage'
 import { LearnerProfilePage } from './pages/learner/LearnerProfilePage'
 import { LearnerHelpPage } from './pages/learner/LearnerHelpPage'
+import { SavedTutorsPage } from './pages/learner/SavedTutorsPage'
+import { MyReviewsPage } from './pages/learner/MyReviewsPage'
+import { LearnerSettingsPage } from './pages/learner/LearnerSettingsPage'
 
 import { TutorDashboard } from './pages/tutor/TutorDashboard'
 import { TutorServicesPage } from './pages/tutor/TutorServicesPage'
@@ -80,9 +83,12 @@ export default function App() {
           <Route path="/learner/find-tutor" element={<FindTutorPage />} />
           <Route path="/learner/sessions" element={<LearnerSessionsPage />} />
           <Route path="/learner/messages" element={<LearnerMessagesPage />} />
+          <Route path="/learner/saved-tutors" element={<SavedTutorsPage />} />
+          <Route path="/learner/my-reviews" element={<MyReviewsPage />} />
           <Route path="/learner/notifications" element={<LearnerNotificationsPage />} />
           <Route path="/learner/apply-tutor" element={<ApplyAsTutorPage />} />
           <Route path="/learner/profile" element={<LearnerProfilePage />} />
+          <Route path="/learner/settings" element={<LearnerSettingsPage />} />
           <Route path="/learner/help" element={<LearnerHelpPage />} />
         </Route>
 

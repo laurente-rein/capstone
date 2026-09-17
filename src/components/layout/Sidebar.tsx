@@ -1,16 +1,44 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { GraduationCap, LogOut } from 'lucide-react'
 import type { NavItem } from '../../lib/navigation'
 import { cn } from '../../lib/utils'
 import { logout } from '../../lib/actions'
-import { useNavigate } from 'react-router-dom'
+
+function NavRow({ item, badgeCount }: { item: NavItem; badgeCount?: number }) {
+  return (
+    <NavLink
+      to={item.path}
+      className={({ isActive }) =>
+        cn(
+          'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+          isActive ? 'bg-white text-brand-900 shadow-sm' : 'text-white/80 hover:bg-white/10 hover:text-white',
+        )
+      }
+    >
+      <item.icon className="size-4.5 shrink-0" />
+      <span className="flex-1">{item.label}</span>
+      {!!badgeCount && (
+        <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-danger-600 text-[11px] font-bold text-white">
+          {badgeCount}
+        </span>
+      )}
+    </NavLink>
+  )
+}
 
 export function Sidebar({
   navItems,
+  accountItems,
+  portalLabel,
   roleSwitcher,
+  badges,
 }: {
   navItems: NavItem[]
+  accountItems?: NavItem[]
+  portalLabel?: string
   roleSwitcher?: { active: 'learner' | 'tutor'; onSwitch: (role: 'learner' | 'tutor') => void }
+  /** Path -> live badge count, e.g. unread messages, computed by the caller. */
+  badges?: Record<string, number>
 }) {
   const navigate = useNavigate()
 
@@ -29,6 +57,8 @@ export function Sidebar({
           Campus<span className="text-gold-400">Tutor</span>
         </span>
       </div>
+
+      {portalLabel && <p className="mt-3 px-5 text-[11px] font-bold uppercase tracking-widest text-gold-400">{portalLabel}</p>}
 
       {roleSwitcher && (
         <div className="mx-5 mt-5 flex rounded-lg bg-white/10 p-1 text-sm font-semibold">
@@ -55,20 +85,17 @@ export function Sidebar({
 
       <nav className="sidebar-scroll mt-5 flex-1 space-y-0.5 overflow-y-auto px-3">
         {navItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                isActive ? 'bg-white text-brand-900 shadow-sm' : 'text-white/80 hover:bg-white/10 hover:text-white',
-              )
-            }
-          >
-            <item.icon className="size-4.5 shrink-0" />
-            {item.label}
-          </NavLink>
+          <NavRow key={item.path} item={item} badgeCount={badges?.[item.path]} />
         ))}
+
+        {accountItems && (
+          <>
+            <p className="px-3 pb-1 pt-4 text-[11px] font-bold uppercase tracking-widest text-white/40">Account</p>
+            {accountItems.map((item) => (
+              <NavRow key={item.path} item={item} badgeCount={badges?.[item.path]} />
+            ))}
+          </>
+        )}
       </nav>
 
       <div className="px-3 pb-3">

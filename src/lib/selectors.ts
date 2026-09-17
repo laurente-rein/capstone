@@ -3,11 +3,12 @@ import type {
   AppRole,
   Booking,
   ClassSchedule,
+  NotificationPreferences,
   OsasCase,
   Service,
   UserAccount,
 } from '../types'
-import { dayOfWeekCode, timeRangesOverlap } from './utils'
+import { dayOfWeekCode, timeRangesOverlap, todayStr } from './utils'
 
 export function getUser(id: string | null | undefined): UserAccount | undefined {
   if (!id) return undefined
@@ -277,6 +278,20 @@ export function getCaseActions(caseId: string) {
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
 }
 
+/** Evidence items attached to non-archived cases that have no validation record yet. */
+export function getPendingEvidenceCount(): number {
+  const db = getDb()
+  let count = 0
+  for (const kase of db.osasCases) {
+    if (kase.status === 'ARCHIVED') continue
+    const incident = db.incidentReports.find((i) => i.id === kase.incidentReportId)
+    if (!incident) continue
+    const validatedIds = new Set(db.evidenceValidations.filter((v) => v.caseId === kase.id).map((v) => v.evidenceId))
+    count += incident.evidence.filter((e) => !validatedIds.has(e.id)).length
+  }
+  return count
+}
+
 export function getClearance(userId: string) {
   return getDb().clearanceReviews.find((c) => c.userId === userId)
 }
@@ -317,4 +332,38 @@ export function getAllPaymentsWithAllocation() {
     allocation: getAllocationForPayment(p.id),
     booking: getBooking(p.bookingId),
   }))
+}
+
+export function isTutorSaved(learnerId: string, tutorId: string): boolean {
+  return getDb().savedTutors.some((s) => s.learnerId === learnerId && s.tutorId === tutorId)
+}
+
+export function getSavedTutorIds(learnerId: string): string[] {
+  return getDb()
+    .savedTutors.filter((s) => s.learnerId === learnerId)
+    .map((s) => s.tutorId)
+}
+
+export function getRatingsGivenByLearner(learnerId: string) {
+  return getDb()
+    .ratings.filter((r) => r.learnerId === learnerId)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+}
+
+export function getNotificationPreferences(userId: string): NotificationPreferences {
+  return (
+    getDb().notificationPreferences.find((p) => p.userId === userId) ?? {
+      userId,
+      emailBookingUpdates: true,
+      emailMessages: true,
+      emailPayments: true,
+    }
+  )
+}
+
+/** Tutors with at least one open availability slot today that isn't already
+ * booked — used as an honest "available now" signal rather than a fabricated
+ * live-presence indicator. */
+export function isTutorAvailableToday(tutorId: string): boolean {
+  return getBookableAvailability(tutorId).some((s) => s.date === todayStr())
 }

@@ -7,6 +7,8 @@ const toneClasses = {
   success: 'bg-success-600 text-white',
   info: 'bg-info-600 text-white',
   neutral: 'bg-neutral-700 text-white',
+  danger: 'bg-danger-600 text-white',
+  purple: 'bg-violet-600 text-white',
 }
 
 export function StatCard({
@@ -36,8 +38,14 @@ export function StatCard({
       <div className={cn('flex size-11 shrink-0 items-center justify-center rounded-full', toneClasses[tone])}>{icon}</div>
       <div className="min-w-0">
         <p className="text-xl font-bold leading-tight text-neutral-900">{value}</p>
-        <p className="truncate text-xs font-medium text-neutral-600">{label}</p>
-        {sublabel && <p className="truncate text-[11px] text-neutral-400">{sublabel}</p>}
+        <p className="truncate text-xs font-medium text-neutral-600" title={label}>
+          {label}
+        </p>
+        {sublabel && (
+          <p className="truncate text-[11px] text-neutral-400" title={sublabel}>
+            {sublabel}
+          </p>
+        )}
       </div>
     </Comp>
   )

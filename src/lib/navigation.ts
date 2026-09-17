@@ -13,7 +13,7 @@ import {
   FileSearch,
   FileClock,
   FolderSearch,
-  GraduationCap,
+  Heart,
   HelpCircle,
   LayoutDashboard,
   MessageSquare,
@@ -21,6 +21,7 @@ import {
   Settings,
   ShieldAlert,
   ShieldCheck,
+  Star,
   User,
   Users,
   Wallet,
@@ -38,10 +39,15 @@ export const learnerNav: NavItem[] = [
   { label: 'Find a Tutor', path: '/learner/find-tutor', icon: Search },
   { label: 'My Sessions', path: '/learner/sessions', icon: CalendarDays },
   { label: 'Messages', path: '/learner/messages', icon: MessageSquare },
+  { label: 'Saved Tutors', path: '/learner/saved-tutors', icon: Heart },
+  { label: 'My Reviews', path: '/learner/my-reviews', icon: Star },
   { label: 'Notifications', path: '/learner/notifications', icon: Bell },
-  { label: 'Apply as Tutor', path: '/learner/apply-tutor', icon: GraduationCap },
+]
+
+export const learnerAccountNav: NavItem[] = [
   { label: 'Profile', path: '/learner/profile', icon: User },
-  { label: 'Help & Safety', path: '/learner/help', icon: HelpCircle },
+  { label: 'Settings', path: '/learner/settings', icon: Settings },
+  { label: 'Help & Support', path: '/learner/help', icon: HelpCircle },
 ]
 
 export const tutorNav: NavItem[] = [

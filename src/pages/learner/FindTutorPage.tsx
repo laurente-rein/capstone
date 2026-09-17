@@ -10,6 +10,7 @@ import { getTutorProfile, getUser, searchTutorServices, type TutorDiscoveryFilte
 import { SUBJECT_CATEGORIES } from '../../lib/constants'
 import { formatCurrency } from '../../lib/utils'
 import { TutorProfileDrawer } from '../../components/learner/TutorProfileDrawer'
+import { SaveTutorButton } from '../../components/learner/SaveTutorButton'
 
 const LEVELS = ['College - 1st Year', 'College - 1st/2nd Year', 'College - 2nd/3rd Year', 'College - 2nd Year', 'College - 3rd Year']
 
@@ -72,7 +73,8 @@ export function FindTutorPage() {
             const profile = getTutorProfile(svc.tutorId)
             if (!tutor) return null
             return (
-              <Card key={svc.id} className="flex flex-col p-4">
+              <Card key={svc.id} className="relative flex flex-col p-4">
+                {userId && <SaveTutorButton learnerId={userId} tutorId={tutor.id} className="absolute right-3 top-3" />}
                 <div className="flex items-center gap-3">
                   <Avatar firstName={tutor.firstName} lastName={tutor.lastName} />
                   <div className="min-w-0">

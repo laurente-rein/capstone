@@ -1,11 +1,11 @@
 import { AppShell } from '../components/layout/AppShell'
-import { adminNav, learnerNav, osasNav, tutorNav } from '../lib/navigation'
+import { adminNav, learnerAccountNav, learnerNav, osasNav, tutorNav } from '../lib/navigation'
 import { ProtectedRoute } from './ProtectedRoute'
 
 export function LearnerLayout() {
   return (
     <ProtectedRoute role="learner">
-      <AppShell navItems={learnerNav} role="learner" searchPlaceholder="Search tutors, subjects, or sessions…" />
+      <AppShell navItems={learnerNav} accountItems={learnerAccountNav} role="learner" searchPlaceholder="Search tutors, subjects, or sessions…" />
     </ProtectedRoute>
   )
 }
@@ -21,7 +21,7 @@ export function TutorLayout() {
 export function AdminLayout() {
   return (
     <ProtectedRoute role="admin">
-      <AppShell navItems={adminNav} role="admin" searchPlaceholder="Search users, services, bookings…" />
+      <AppShell navItems={adminNav} role="admin" searchPlaceholder="Search users, tutors, bookings, reports, or settings…" />
     </ProtectedRoute>
   )
 }
@@ -29,7 +29,7 @@ export function AdminLayout() {
 export function OsasLayout() {
   return (
     <ProtectedRoute role="osas">
-      <AppShell navItems={osasNav} role="osas" searchPlaceholder="Search cases, students, incidents…" />
+      <AppShell navItems={osasNav} role="osas" portalLabel="OSAS Portal" searchPlaceholder="Search cases, reports, documents, or students…" />
     </ProtectedRoute>
   )
 }

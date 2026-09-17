@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Avatar } from '../ui/Avatar'
 import { Dropdown, DropdownItem } from '../ui/Dropdown'
 import { useCurrentUser, useDb } from '../../hooks/useDb'
-import { getNotifications, getUnreadCount, getUnreadMessageCount } from '../../lib/selectors'
+import { getNotifications, getUnreadCount } from '../../lib/selectors'
 import { markAllNotificationsRead, markNotificationRead, logout } from '../../lib/actions'
 import { timeAgo } from '../../lib/utils'
 import { EmptyState } from '../ui/EmptyState'
@@ -15,20 +15,23 @@ export function Navbar({
   messagesPath,
   notificationsPath,
   profilePath,
+  settingsPath,
   helpPath,
+  helpLabel = 'Help & Safety',
 }: {
   searchPlaceholder?: string
   onSearch?: (query: string) => void
   messagesPath: string
   notificationsPath: string
   profilePath: string
+  settingsPath?: string
   helpPath: string
+  helpLabel?: string
 }) {
   const navigate = useNavigate()
   const { user, userId } = useCurrentUser()
   const notifications = useDb(() => (userId ? getNotifications(userId) : []))
   const unread = useDb(() => (userId ? getUnreadCount(userId) : 0))
-  const unreadMsgs = useDb(() => (userId ? getUnreadMessageCount(userId) : 0))
   const [query, setQuery] = useState('')
 
   if (!user) return null
@@ -49,18 +52,6 @@ export function Navbar({
       </div>
 
       <div className="ml-auto flex items-center gap-1">
-        <button
-          onClick={() => navigate(messagesPath)}
-          className="relative flex size-9 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100"
-        >
-          <MessageSquare className="size-5" />
-          {unreadMsgs > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-danger-600 text-[10px] font-bold text-white">
-              {unreadMsgs}
-            </span>
-          )}
-        </button>
-
         <Dropdown
           width="w-80"
           trigger={({ toggle }) => (
@@ -123,6 +114,14 @@ export function Navbar({
           )}
         </Dropdown>
 
+        <button
+          onClick={() => navigate(messagesPath)}
+          title="Messages"
+          className="flex size-9 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100"
+        >
+          <MessageSquare className="size-5" />
+        </button>
+
         <Dropdown
           trigger={({ toggle }) => (
             <button onClick={toggle} className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 hover:bg-neutral-100">
@@ -140,11 +139,11 @@ export function Navbar({
               <DropdownItem icon={<UserIcon className="size-4" />} onClick={() => { close(); navigate(profilePath) }}>
                 Profile
               </DropdownItem>
-              <DropdownItem icon={<Settings className="size-4" />} onClick={() => { close(); navigate(profilePath) }}>
+              <DropdownItem icon={<Settings className="size-4" />} onClick={() => { close(); navigate(settingsPath ?? profilePath) }}>
                 Settings
               </DropdownItem>
               <DropdownItem icon={<HelpCircle className="size-4" />} onClick={() => { close(); navigate(helpPath) }}>
-                Help & Safety
+                {helpLabel}
               </DropdownItem>
               <div className="my-1 border-t border-neutral-100" />
               <DropdownItem

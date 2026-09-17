@@ -7,6 +7,7 @@ import { useDb } from '../../hooks/useDb'
 import { getRatingsForTutor, getServicesForTutor, getTutorProfile, getUser } from '../../lib/selectors'
 import { formatCurrency, timeAgo } from '../../lib/utils'
 import { BookingFlowModal } from './BookingFlowModal'
+import { SaveTutorButton } from './SaveTutorButton'
 import type { Service } from '../../types'
 
 export function TutorProfileDrawer({
@@ -29,9 +30,9 @@ export function TutorProfileDrawer({
       <Drawer open={!!tutorId} onClose={onClose} title="Tutor Profile">
         {tutor && (
           <div className="space-y-6">
-            <div className="flex items-center gap-3">
+            <div className="flex items-start gap-3">
               <Avatar firstName={tutor.firstName} lastName={tutor.lastName} size="lg" />
-              <div>
+              <div className="flex-1">
                 <p className="text-base font-semibold text-neutral-900">{tutor.firstName} {tutor.lastName}</p>
                 <p className="text-xs text-neutral-500">{tutor.program}</p>
                 <div className="mt-1 flex items-center gap-1 text-sm text-gold-600">
@@ -40,6 +41,7 @@ export function TutorProfileDrawer({
                   <span className="text-xs text-neutral-400">({profile?.ratingCount ?? 0} reviews)</span>
                 </div>
               </div>
+              <SaveTutorButton learnerId={learnerId} tutorId={tutor.id} className="static bg-neutral-100 shadow-none" />
             </div>
 
             {profile?.bio && <p className="text-sm text-neutral-600">{profile.bio}</p>}
