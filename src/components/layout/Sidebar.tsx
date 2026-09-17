@@ -81,16 +81,13 @@ export function Sidebar({
         </button>
       </div>
 
-      <div className="relative mt-1 overflow-hidden border-t border-white/10 bg-gradient-to-br from-brand-800 to-brand-950 px-5 py-4">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-20"
-          style={{
-            backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 1px)',
-            backgroundSize: '14px 14px',
-          }}
-        />
-        <p className="relative text-sm font-semibold text-gold-300">Caraga State University</p>
-        <p className="relative text-[11px] text-white/60">Excellence. Service. Commitment.</p>
+      <div className="relative mt-1 h-28 shrink-0 overflow-hidden border-t-2 border-gold-500">
+        <img src="/campus.jpg" alt="" className="h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-brand-950 via-brand-950/60 to-brand-950/10" />
+        <div className="absolute inset-x-0 bottom-0 px-5 py-3">
+          <p className="text-sm font-semibold text-gold-300">Caraga State University</p>
+          <p className="text-[11px] text-white/70">Excellence. Service. Commitment.</p>
+        </div>
       </div>
     </aside>
   )
