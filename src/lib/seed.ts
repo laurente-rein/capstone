@@ -3,7 +3,7 @@ import type { SystemSettings } from '../types'
 import { PAYMENT_ALLOCATION, PAYMENT_METHOD, PAYMENT_PROVIDER } from './constants'
 import { addDaysToDateStr, makeId, simpleHash, todayStr } from './utils'
 
-export const SEED_VERSION = 6
+export const SEED_VERSION = 7
 
 const DEMO_PASSWORD = 'Passw0rd!'
 const hash = () => simpleHash(DEMO_PASSWORD)
@@ -131,36 +131,6 @@ export function buildSeedData(): DbState {
       createdAt: iso(d(-90)),
     },
     {
-      id: 'u-pending-tutor',
-      firstName: 'Nico',
-      lastName: 'Ramirez',
-      studentId: '2022-00777',
-      email: 'nico.ramirez@csu.edu.ph',
-      college: 'College of Engineering and Geosciences',
-      program: 'BS Electrical Engineering',
-      yearLevel: '4th Year',
-      passwordHash: hash(),
-      emailVerified: true,
-      roles: ['learner'],
-      status: 'active',
-      createdAt: iso(d(-60)),
-    },
-    {
-      id: 'u-newtutor',
-      firstName: 'Ella',
-      lastName: 'Marquez',
-      studentId: '2021-00512',
-      email: 'ella.marquez@csu.edu.ph',
-      college: 'College of Education',
-      program: 'BSEd Mathematics',
-      yearLevel: '4th Year',
-      passwordHash: hash(),
-      emailVerified: true,
-      roles: ['learner', 'tutor'],
-      status: 'active',
-      createdAt: iso(d(-45)),
-    },
-    {
       id: 'u-suspended',
       firstName: 'Miguel',
       lastName: 'Torres',
@@ -234,62 +204,11 @@ export function buildSeedData(): DbState {
       reviewedAt: iso(d(-250)),
       reviewedBy: 'u-admin',
     },
-    {
-      id: 'ta-ella',
-      userId: 'u-newtutor',
-      status: 'APPROVED',
-      subjects: ['Mathematics'],
-      motivation: 'Education major specializing in Math — comfortable tutoring College Algebra and Trig.',
-      documents: [
-        {
-          id: 'doc-ella-1',
-          applicationId: 'ta-ella',
-          fileName: 'ella_cor_2026.jpg',
-          fileUrl: '',
-          ocrConfidence: 85,
-          ocrFields: {
-            Name: 'Marquez, Ella',
-            'Student ID': '2021-00512',
-            Program: 'BSEd Mathematics',
-            'Year Level': '4th Year',
-          },
-          uploadedAt: iso(d(-40)),
-        },
-      ],
-      adminNotes: 'Approved — pending class schedule confirmation before service creation.',
-      submittedAt: iso(d(-42)),
-      reviewedAt: iso(d(-40)),
-      reviewedBy: 'u-admin',
-    },
-    {
-      id: 'ta-nico',
-      userId: 'u-pending-tutor',
-      status: 'UNDER_REVIEW',
-      subjects: ['Circuits', 'Electrical Engineering'],
-      motivation: 'Dean’s lister, want to tutor fellow EE students in circuits.',
-      documents: [
-        {
-          id: 'doc-nico-1',
-          applicationId: 'ta-nico',
-          fileName: 'nico_cor_2026.jpg',
-          fileUrl: '',
-          ocrConfidence: 74,
-          ocrFields: {
-            Name: 'Ramirez, Nico',
-            'Student ID': '2022-00777',
-            Program: 'BS Electrical Engineering',
-          },
-          uploadedAt: iso(d(-3)),
-        },
-      ],
-      submittedAt: iso(d(-3)),
-    },
   ]
 
   const tutorProfiles: DbState['tutorProfiles'] = [
     { userId: 'u-juan', bio: 'CS senior focused on programming & math fundamentals.', averageRating: 4.8, ratingCount: 24, totalEarnings: 0 },
     { userId: 'u-bea', bio: 'Chemistry major, patient and detail-oriented tutor.', averageRating: 4.6, ratingCount: 11, totalEarnings: 0 },
-    { userId: 'u-newtutor', bio: 'Math education major.', averageRating: 0, ratingCount: 0, totalEarnings: 0 },
   ]
 
   // ---- Class schedules ----
@@ -323,7 +242,6 @@ export function buildSeedData(): DbState {
       uploadedAt: iso(d(-200), '09:00'),
       confirmedAt: iso(d(-200), '09:30'),
     },
-    // Ella (approved tutor) has NOT confirmed a schedule yet -> Create Service stays locked.
   ]
 
   // ---- Services ----
@@ -681,8 +599,6 @@ export function buildSeedData(): DbState {
     { id: makeId('ntf'), userId: 'u-juan', title: 'Class schedule confirmed', body: 'Your class schedule was successfully confirmed.', type: 'SCHEDULE', linkTo: '/tutor/availability', read: true, createdAt: iso(d(-1), '15:45') },
     { id: makeId('ntf'), userId: 'u-juan', title: 'New booking request', body: 'Lyla Shane B. requested a Statistics session.', type: 'BOOKING', linkTo: '/tutor/sessions', read: false, createdAt: iso(d(0), '07:20') },
     { id: makeId('ntf'), userId: 'u-maria', title: 'Booking confirmed', body: 'Your session with Juan Dela Cruz is confirmed for ' + d(1) + '.', type: 'BOOKING', linkTo: '/learner/sessions', read: false, createdAt: iso(d(-1)) },
-    { id: makeId('ntf'), userId: 'u-pending-tutor', title: 'Application under review', body: 'Your tutor application is now under review.', type: 'APPLICATION', linkTo: '/learner/apply-tutor', read: false, createdAt: iso(d(-3)) },
-    { id: makeId('ntf'), userId: 'u-admin', title: 'New tutor application', body: 'Nico Ramirez submitted a tutor application.', type: 'APPLICATION', linkTo: '/admin/tutor-verification', read: false, createdAt: iso(d(-3)) },
   ]
 
   // ---- Incidents & OSAS ----
@@ -767,7 +683,6 @@ export function buildSeedData(): DbState {
   const auditLogs: DbState['auditLogs'] = [
     { id: makeId('log'), actorId: 'u-admin', actorName: 'Grace Mendoza', action: 'TUTOR_APPROVED', targetType: 'TutorApplication', targetId: 'ta-juan', details: 'Approved Juan Dela Cruz as Tutor', createdAt: iso(d(-70)) },
     { id: makeId('log'), actorId: 'u-admin', actorName: 'Grace Mendoza', action: 'TUTOR_APPROVED', targetType: 'TutorApplication', targetId: 'ta-bea', details: 'Approved Bea Santos as Tutor', createdAt: iso(d(-250)) },
-    { id: makeId('log'), actorId: 'u-admin', actorName: 'Grace Mendoza', action: 'TUTOR_APPROVED', targetType: 'TutorApplication', targetId: 'ta-ella', details: 'Approved Ella Marquez as Tutor', createdAt: iso(d(-40)) },
     { id: makeId('log'), actorId: 'u-admin', actorName: 'Grace Mendoza', action: 'USER_SUSPENDED', targetType: 'User', targetId: 'u-suspended', details: 'Suspended for repeated no-shows', createdAt: iso(d(-14)) },
     { id: makeId('log'), actorId: 'u-admin', actorName: 'Grace Mendoza', action: 'INCIDENT_REFERRED_TO_OSAS', targetType: 'IncidentReport', targetId: 'INC-2026-001', details: 'Referred to OSAS for institutional review', createdAt: iso(d(-14)) },
   ]
@@ -810,11 +725,15 @@ export function buildSeedData(): DbState {
   }
 }
 
+// Every account below is a single, unified identity — there is no separate "tutor account".
+// Juan and Bea already have an approved Tutor capability on their same Learner account so
+// there's a working marketplace (services, bookings, ratings) to browse from day one. Any
+// other Learner account — or a brand new registration — can go through the real pipeline
+// end to end: Apply as Tutor -> Admin approves -> upload & confirm class schedule -> create
+// services, all on that one account.
 export const DEMO_ACCOUNTS = [
-  { role: 'Learner + Tutor (Approved)', email: 'juan@csu.edu.ph', password: DEMO_PASSWORD },
-  { role: 'Learner', email: 'maria.angela@csu.edu.ph', password: DEMO_PASSWORD },
-  { role: 'Learner (Application under review)', email: 'nico.ramirez@csu.edu.ph', password: DEMO_PASSWORD },
-  { role: 'Learner + Tutor (Schedule not confirmed)', email: 'ella.marquez@csu.edu.ph', password: DEMO_PASSWORD },
+  { role: 'Learner / Tutor (established marketplace)', email: 'juan@csu.edu.ph', password: DEMO_PASSWORD },
+  { role: 'Learner (try Apply as Tutor from scratch)', email: 'maria.angela@csu.edu.ph', password: DEMO_PASSWORD },
   { role: 'Admin', email: 'admin@csu.edu.ph', password: DEMO_PASSWORD },
   { role: 'OSAS', email: 'osas@csu.edu.ph', password: DEMO_PASSWORD },
 ]

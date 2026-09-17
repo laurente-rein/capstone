@@ -15,16 +15,23 @@ The app runs entirely on a **built-in mock backend** by default — a Zustand st
 
 ### Demo accounts
 
-All seeded accounts use the password `Passw0rd!` (also shown on the login page under "Need Help?"):
+Every account is a single, unified identity — there is no separate "tutor account". A student is a Learner by default; once Admin approves their tutor application, that *same* account gains Tutor capability (shown as a Learner | Tutor switcher in the sidebar). All seeded accounts use the password `Passw0rd!` (also shown on the login page under "Need Help?"):
 
 | Role | Email |
 |---|---|
-| Learner + approved Tutor | `juan@csu.edu.ph` |
-| Learner | `maria.angela@csu.edu.ph` |
-| Learner (application under review) | `nico.ramirez@csu.edu.ph` |
-| Learner + Tutor (schedule not yet confirmed — demonstrates the Create Service lock) | `ella.marquez@csu.edu.ph` |
+| Learner / Tutor — already has an established marketplace (services, bookings, ratings) to browse | `juan@csu.edu.ph` |
+| Learner — use this one to try the tutor pipeline from scratch | `maria.angela@csu.edu.ph` |
 | Admin | `admin@csu.edu.ph` |
 | OSAS | `osas@csu.edu.ph` |
+
+To see the full apply-as-tutor journey end to end on one account, either register a brand new account or log in as a plain Learner (e.g. `maria.angela@csu.edu.ph`) and:
+
+1. Click the **Tutor** toggle in the sidebar (or **Apply as Tutor**) — since you haven't applied yet, it opens the application form.
+2. Submit it. It now shows an "Under Review" status screen if you click **Tutor** again.
+3. Log in as `admin@csu.edu.ph` → **Tutor Verification** → approve the application.
+4. Log back in as your account — the **Tutor** toggle now opens the Tutor dashboard directly. **My Services → Create Service** is locked with a "Class Schedule Required" prompt.
+5. Go to **Availability & Schedule → Class Schedule**, upload an image (any image works — OCR runs for real, but you can also just add rows manually in the review step), then confirm it.
+6. **Create Service** is now unlocked.
 
 ### Connecting a real Supabase project
 

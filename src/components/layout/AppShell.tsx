@@ -1,4 +1,4 @@
-import { Outlet, useNavigate } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import type { NavItem } from '../../lib/navigation'
 import { Sidebar } from './Sidebar'
 import { Navbar } from './Navbar'
@@ -15,12 +15,22 @@ export function AppShell({
   searchPlaceholder?: string
 }) {
   const navigate = useNavigate()
+  const location = useLocation()
   const { user } = useCurrentUser()
   const setActiveRole = useSessionStore((s) => s.setActiveRole)
 
-  const showSwitcher = (role === 'learner' || role === 'tutor') && !!user?.roles.includes('tutor')
+  // Every learner account can click into "Tutor" — where that lands depends on
+  // where they are in the apply-as-tutor pipeline (see ApplyAsTutorPage).
+  const showSwitcher = role === 'learner' || role === 'tutor'
+  const isApprovedTutor = !!user?.roles.includes('tutor')
+  const onApplyPage = location.pathname === '/learner/apply-tutor'
+  const switcherActive: 'learner' | 'tutor' = role === 'tutor' || onApplyPage ? 'tutor' : 'learner'
 
   function handleSwitch(next: 'learner' | 'tutor') {
+    if (next === 'tutor' && !isApprovedTutor) {
+      navigate('/learner/apply-tutor')
+      return
+    }
     setActiveRole(next)
     navigate(`/${next}/dashboard`)
   }
@@ -31,7 +41,7 @@ export function AppShell({
     <div className="flex h-screen bg-neutral-50">
       <Sidebar
         navItems={navItems}
-        roleSwitcher={showSwitcher ? { active: role as 'learner' | 'tutor', onSwitch: handleSwitch } : undefined}
+        roleSwitcher={showSwitcher ? { active: switcherActive, onSwitch: handleSwitch } : undefined}
       />
       <div className="flex min-w-0 flex-1 flex-col">
         <Navbar
